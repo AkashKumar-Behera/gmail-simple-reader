@@ -222,6 +222,15 @@ app.get("/api/leaderboard", (req, res) => {
   res.json(sorted);
 });
 
+app.get("/auth/nightbot", (req, res) => {
+  const clientId = process.env.NIGHTBOT_CLIENT_ID;
+  const redirectUri = process.env.NIGHTBOT_REDIRECT_URI;
+
+  const url = `https://api.nightbot.tv/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=channel_send`;
+
+  res.redirect(url);
+});
+
 /* ================= START ================= */
 
 app.listen(PORT, () => {
