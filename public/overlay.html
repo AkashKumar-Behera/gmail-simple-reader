@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Donation Overlay</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: Arial, sans-serif;
+}
+
+/* Alert container hidden by default */
+#alertBox {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: none;
+}
+
+/* GIF */
+#gif {
+  width: 320px;
+}
+
+/* Name */
+#name {
+  font-size: 35px;
+  color: rgb(25, 195, 45);
+  font-weight: bold;
+  text-shadow: 0 0 20px black;
+}
+
+/* Message */
+#message {
+  font-size: 24px;
+  color: rgb(255, 255, 255);
+  margin-top: 10px;
+  text-shadow: 0 0 10px black;
+}
+
+/* Amount */
+#amount {
+  font-size: 48px;
+  color: gold;
+  font-weight: bold;
+  margin-top: 5px;
+  text-shadow: 0 0 25px black;
+}
+
+/* Confetti canvas hidden initially */
+#confettiCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<div id="alertBox">
+  <img id="gif" src="alert.gif">
+  <div id="amount"></div>
+  <div id="name"></div>
+  <div id="message"></div>
+</div>
+
+<audio id="alertSound" src="alert.mp3" preload="auto"></audio>
+<audio id="ttsPlayer" preload="auto"></audio>
+
+<script>
+const canvas = document.getElementById("confettiCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let confettiPieces = [];
+let confettiActive = false;
+
+function startConfetti() {
+  confettiActive = true;
+  canvas.style.display = "block";
+  confettiPieces = [];
+
+  for (let i = 0; i < 150; i++) {
+    confettiPieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 8 + 4,
+      speed: Math.random() * 3 + 2,
+      color: `hsl(${Math.random()*360},100%,50%)`
+    });
+  }
+
+  requestAnimationFrame(drawConfetti);
+}
+
+function stopConfetti() {
+  confettiActive = false;
+  canvas.style.display = "none";
+}
+
+function drawConfetti() {
+  if (!confettiActive) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  confettiPieces.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+    p.y += p.speed;
+    if (p.y > canvas.height) p.y = -10;
+  });
+
+  requestAnimationFrame(drawConfetti);
+}
+
+async function checkAlert() {
+  try {
+    const res = await fetch("/current-alert");
+    const data = await res.json();
+
+    if (data.active) {
+      showAlert(data.name, data.amount);
+    }
+  } catch(e){}
+}
+
+function showAlert(name, amount) {
+  const box = document.getElementById("alertBox");
+  const nameDiv = document.getElementById("name");
+  const amountDiv = document.getElementById("amount");
+  const messageDiv = document.getElementById("message");
+  const alertSound = document.getElementById("alertSound");
+  const tts = document.getElementById("ttsPlayer");
+
+  nameDiv.innerText = name;
+  amountDiv.innerText = "₹ " + amount;
+  messageDiv.innerText = "Thank you so much for your support!";
+
+  box.style.display = "block";
+
+  startConfetti();
+
+  alertSound.play().catch(()=>{});
+
+  alertSound.onended = () => {
+    tts.src = "tts.mp3?cache=" + Date.now();
+    tts.play().catch(()=>{});
+  };
+
+  tts.onended = () => {
+    box.style.display = "none";
+    stopConfetti();
+  };
+}
+
+setInterval(checkAlert, 2000);
+</script>
+
+</body>
+</html>
