@@ -231,6 +231,8 @@ app.get("/auth/nightbot", (req, res) => {
   res.redirect(url);
 });
 
+const qs = require("querystring");
+
 app.get("/auth/nightbot/callback", async (req, res) => {
   const code = req.query.code;
   if (!code) return res.send("No code received");
@@ -238,28 +240,23 @@ app.get("/auth/nightbot/callback", async (req, res) => {
   try {
     const response = await axios.post(
       "https://api.nightbot.tv/oauth2/token",
-      {
+      qs.stringify({
         client_id: process.env.NIGHTBOT_CLIENT_ID,
         client_secret: process.env.NIGHTBOT_CLIENT_SECRET,
         code,
         grant_type: "authorization_code",
         redirect_uri: process.env.NIGHTBOT_REDIRECT_URI
+      }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
       }
     );
 
     fs.writeFileSync(
       "nightbot_token.json",
-      JSON.stringify(
-        {
-          access_token: response.data.access_token,
-          refresh_token: response.data.refresh_token,
-          scope: response.data.scope,
-          token_type: response.data.token_type,
-          saved_at: new Date().toISOString()
-        },
-        null,
-        2
-      )
+      JSON.stringify(response.data, null, 2)
     );
 
     res.send("Nightbot connected successfully ✅");
@@ -268,7 +265,6 @@ app.get("/auth/nightbot/callback", async (req, res) => {
     res.send("Nightbot OAuth failed ❌");
   }
 });
-
 /* ================= START ================= */
 
 app.listen(PORT, () => {
