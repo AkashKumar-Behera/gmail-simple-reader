@@ -210,7 +210,7 @@ async function checkEmails() {
       cleanAmount = cleanAmount.toFixed(2);
     }
 
-    const message = `${firstName} Tipped ${cleanAmount} ₹! Thank-you so much for your support!`;
+    const message = `${firstName} Tipped ${cleanAmount} rupees! Thank-you so much for your support!`;
     const nightBotmessage = `${firstName} Tipped ${cleanAmount} rupees💸 Thank-you so much for your support 💖`;
 
     /* ===== Save Logs ===== */
@@ -224,7 +224,7 @@ async function checkEmails() {
 
     if (!logs.some(l => l.utr === parsed.utr)) {
       logs.push({
-        name: formattedName,
+        name: firstName,
         amount: parsed.amount,
         utr: parsed.utr,
         time: new Date().toISOString()
