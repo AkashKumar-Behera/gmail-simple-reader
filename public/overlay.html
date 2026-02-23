@@ -6,53 +6,87 @@
 
 <style>
 body {
+  height: 100vh;
   margin: 0;
   overflow: hidden;
-  background: transparent;
-  font-family: Arial, sans-serif;
+  background: rgba(0, 0, 0, 0);
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Alert container hidden by default */
+/* CENTER SCREEN */
 #alertBox {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
   display: none;
+  flex-direction: column;
+  align-items: center;
+  text-shadow: 0px 0px 1px #000, 0px 0px 2px #000, 0px 0px 3px #000, 0px 0px 4px #000, 0px 0px 5px #000;
 }
 
-/* GIF */
+/* IMAGE */
 #gif {
-  width: 320px;
+  width: 300px;
+}
+
+/* TEXT CONTAINER */
+.textContent {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* MAIN LINE */
+.thankLine {
+  margin: 10px 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46px;
+  font-weight: 700;
+  color: white;
+  gap: 10px;
 }
 
 /* Name */
 #name {
-  font-size: 35px;
-  color: rgb(25, 195, 45);
-  font-weight: bold;
-  text-shadow: 0 0 20px black;
-}
-
-/* Message */
-#message {
-  font-size: 24px;
-  color: rgb(255, 255, 255);
-  margin-top: 10px;
-  text-shadow: 0 0 10px black;
+  font-size: 46px;
+  font-weight: 800;
+  color: #ffc107;
 }
 
 /* Amount */
 #amount {
-  font-size: 48px;
-  color: gold;
-  font-weight: bold;
-  margin-top: 5px;
-  text-shadow: 0 0 25px black;
+  font-size: 46px;
+  font-weight: 900;
+  color: #ffc107;
+  margin-top: 10px;
 }
 
-/* Confetti canvas hidden initially */
+/* Sub message */
+#message {
+  font-size: 25px;
+  color: #f0f0f0;
+}
+
+/* Letter Wiggle Animation */
+@keyframes letterWiggle {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  25%  { transform: translateY(-2px) rotate(-6deg); }
+  50%  { transform: translateY(0px) rotate(6deg); }
+  75%  { transform: translateY(-4px) rotate(-3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.wiggle span {
+  display: inline-block;
+  animation: letterWiggle 0.7s ease-in-out infinite;
+}
+
+/* Confetti canvas */
 #confettiCanvas {
   position: fixed;
   top: 0;
@@ -64,14 +98,21 @@ body {
 </head>
 
 <body>
-
 <canvas id="confettiCanvas"></canvas>
 
 <div id="alertBox">
   <img id="gif" src="alert.gif">
-  <div id="amount"></div>
-  <div id="name"></div>
-  <div id="message"></div>
+
+  <div class="textContent">
+    
+    <div class="thankLine">
+      <span id="name"></span> 
+      tipped
+      <span id="amount"></span>
+    </div>
+    <div id="message"></div>
+  </div>
+
 </div>
 
 <audio id="alertSound" src="alert.mp3" preload="auto"></audio>
@@ -86,6 +127,23 @@ canvas.height = window.innerHeight;
 
 let confettiPieces = [];
 let confettiActive = false;
+
+/* ================= LETTER SPLIT FUNCTION ================= */
+function applyWiggle(element) {
+  const text = element.innerText;
+  element.innerHTML = "";
+
+  text.split("").forEach((char, index) => {
+    const span = document.createElement("span");
+    span.innerText = char;
+    span.style.animationDelay = (index * 0.05) + "s";
+    element.appendChild(span);
+  });
+
+  element.classList.add("wiggle");
+}
+
+/* ================= CONFETTI ================= */
 
 function startConfetti() {
   confettiActive = true;
@@ -125,6 +183,8 @@ function drawConfetti() {
   requestAnimationFrame(drawConfetti);
 }
 
+/* ================= ALERT LOGIC ================= */
+
 async function checkAlert() {
   try {
     const res = await fetch("/current-alert");
@@ -148,7 +208,10 @@ function showAlert(name, amount) {
   amountDiv.innerText = "₹ " + amount;
   messageDiv.innerText = "Thank you so much for your support!";
 
-  box.style.display = "block";
+  applyWiggle(nameDiv);
+  applyWiggle(amountDiv);
+
+  box.style.display = "flex";
 
   startConfetti();
 

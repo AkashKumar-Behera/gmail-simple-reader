@@ -14,7 +14,7 @@ app.use(express.json());
 
 /* ================= CONFIG ================= */
 
-const CHECK_INTERVAL = 5000;
+const CHECK_INTERVAL = 10000;
 let isBusy = false;
 let currentAlert = null;
 
@@ -210,7 +210,7 @@ async function checkEmails() {
       cleanAmount = cleanAmount.toFixed(2);
     }
 
-    const message = `${firstName} Tipped ${cleanAmount} rupees! Thank-you so much for your support!`;
+    const message = `${firstName} Tipped ${cleanAmount} ₹! Thank-you so much for your support!`;
     const nightBotmessage = `${firstName} Tipped ${cleanAmount} rupees💸 Thank-you so much for your support 💖`;
 
     /* ===== Save Logs ===== */
@@ -244,7 +244,7 @@ async function checkEmails() {
 
     logInfo("🚨 Triggering donation overlay animation...");
     currentAlert = {
-      name: formattedName,
+      name: firstName,
       amount: parsed.amount,
       nightBotmessage
     };
